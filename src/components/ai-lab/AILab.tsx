@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { projects } from "@/data/projects";
 import { ArrowUpRight, X } from "lucide-react";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 /** Ashoka Chakra — 24 spokes, slow rotation, for KnowSamvidhan */
 function Chakra({ size = 120 }: { size?: number }) {
@@ -42,7 +43,7 @@ function CopilotSpotlight() {
         <span className="rounded-lg bg-gradient-to-r from-[#6e7cff] to-[#a855f7] px-6 py-2.5 font-bold tracking-widest text-white shadow-[0_0_30px_rgba(110,124,255,0.45)]">
           AI ENGINE
         </span>
-        <div className="flex items-stretch gap-2 text-[11px] md:gap-4">
+        <div className="flex flex-col items-stretch gap-2 text-[11px] min-[480px]:flex-row md:gap-4">
           {[
             ["ATS", "SCORE", "7 factors · 25/20/20/15/10/5/5"],
             ["SKILL", "MATCH", "embeddings · cosine sim"],
@@ -77,11 +78,12 @@ export default function AILab() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_85%_at_30%_40%,rgba(0,0,0,0.6),transparent_70%)]" aria-hidden />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/70" aria-hidden />
       <div className="relative mx-auto max-w-7xl">
-        <div className="font-mono text-xs tracking-[0.35em] text-[#a855f7]">02 // SIGNATURE</div>
-        <h2 className="font-huge mt-2">AI LAB</h2>
-        <p className="mt-3 max-w-2xl text-zinc-400">
-          Not project cards — a laboratory. Click a module to open the full engineering case study.
-        </p>
+        <SectionHeading
+          index="02"
+          eyebrow="AI LAB"
+          title="AI LAB"
+          sub="Not project cards — a laboratory. Click a module to open the full engineering case study."
+        />
         <CopilotSpotlight />
         <div className="mt-6 flex items-center justify-center">
           <div className="relative flex h-24 w-24 items-center justify-center">
@@ -205,7 +207,7 @@ export default function AILab() {
                   <span key={s} className="rounded-full bg-white/5 px-3 py-1 font-mono text-[11px]">{s}</span>
                 ))}
               </div>
-              <div className="mt-6 flex gap-3">
+              <div className="mt-6 flex flex-wrap gap-3">
                 {current.github && (
                   <a href={current.github} className="rounded-full bg-white px-5 py-2.5 font-mono text-xs font-bold text-black hover:bg-[#6e7cff] hover:text-white">
                     GitHub ↗

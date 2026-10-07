@@ -44,7 +44,7 @@ export default function CodeTerminal() {
           </div>
           <div className="min-h-[280px] bg-black/80 p-5 font-mono text-[13px] leading-relaxed">
             {lines.map((l, i) => (
-              <div key={i} className={l.startsWith("$") ? "text-emerald-300" : "text-zinc-300"}>
+              <div key={i} className={`break-all ${l.startsWith("$") ? "text-emerald-300" : "text-zinc-300"}`}>
                 {l || " "}
               </div>
             ))}

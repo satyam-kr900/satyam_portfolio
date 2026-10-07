@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { projects } from "@/data/projects";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const UniverseScene = dynamic(() => import("@/three/projects/UniverseScene"), { ssr: false });
 
@@ -23,12 +24,11 @@ export default function ProjectUniverse() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-5">
-        <div className="font-mono text-xs tracking-[0.35em] text-[#22d3ee]">PROJECT ARCHIVE</div>
-        <h2 className="mt-2 text-4xl font-bold md:text-6xl">
-          WORK THAT
-          <br />
-          SHIPS.
-        </h2>
+        <SectionHeading
+          index="03"
+          eyebrow="WORK"
+          title={<>WORK THAT<br />SHIPS.</>}
+        />
 
         <div className="mt-12 border-t border-white/10">
           {projects.map((p, i) => (

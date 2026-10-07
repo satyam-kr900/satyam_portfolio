@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { SITE } from "@/lib/constants";
 import { CONTACT_PORTRAIT } from "@/data/gallery";
 import SmartImage from "@/components/ui/SmartImage";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 /** CONTACT = CINEMATIC ENDING — everything fades, photo breathes behind the text */
 export default function Contact() {
@@ -25,15 +26,13 @@ export default function Contact() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,#6e7cff22,transparent_60%)]" />
 
       <div className="relative mx-auto max-w-3xl">
-        <div className="font-mono text-xs tracking-[0.35em] text-zinc-500">FINAL TRANSMISSION</div>
-        <h2 className="font-huge mt-4">
-          WHAT
-          <br />
-          SHOULD WE
-          <br />
-          BUILD <span className="bg-gradient-to-r from-white via-[#9aa6ff] to-[#a855f7] bg-clip-text text-transparent">NEXT?</span>
-        </h2>
-        <p className="mx-auto mt-5 max-w-md text-zinc-400">Have an idea? Let&apos;s build it.</p>
+        <SectionHeading
+          align="center"
+          index="08"
+          eyebrow="CONTACT"
+          title={<>WHAT<br />SHOULD WE<br />BUILD <span className="bg-gradient-to-r from-white via-[#9aa6ff] to-[#a855f7] bg-clip-text text-transparent">NEXT?</span></>}
+          sub="Have an idea? Let's build it."
+        />
         <div className="glass mx-auto mt-8 flex max-w-md items-center gap-4 rounded-2xl p-4 text-left">
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-white/15 grayscale contrast-125">
             <SmartImage src={CONTACT_PORTRAIT} alt="Satyam Kumar — signature" className="h-full w-full object-cover object-top" />

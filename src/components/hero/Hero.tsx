@@ -1,101 +1,75 @@
 "use client";
-import { useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpRight, ArrowDown, Mail, MapPin, Sparkles } from "lucide-react";
+import MagneticButton from "@/components/ui/MagneticButton";
 
-const HoloGlobeCanvas = dynamic(
-  () => import("@/three/hero/HeroScene").then((m) => m.HoloGlobeCanvas),
-  { ssr: false }
+const ChromeSculptureCanvas = dynamic(
+  () => import("@/three/hero/ChromeSculpture").then((m) => m.ChromeSculptureCanvas),
+  { ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-3xl bg-white/[0.03]" /> }
 );
-const HeroScene = dynamic(() => import("@/three/hero/HeroScene"), { ssr: false });
 
-type Node = {
-  label: string;
-  tech: string;
-  href: string;
-  kind: "SKILL" | "PROJECT";
-  /** desktop position (% of stage) — matches reference screenshot */
-  x: string;
-  y: string;
-  lineTo: "left" | "right";
-};
+const ROLES = ["AI Engineer", "Full-Stack Developer", "GenAI Builder", "RAG Specialist"];
 
-const NODES: Node[] = [
-  { label: "AI / GenAI", tech: "Gemini API · RAG · Embeddings", href: "#ai-lab", kind: "SKILL", x: "47%", y: "14%", lineTo: "right" },
-  { label: "Frontend", tech: "React · Next.js 14 · Tailwind", href: "#stack", kind: "SKILL", x: "63%", y: "8%", lineTo: "left" },
-  { label: "AI Career Copilot", tech: "Next.js · Gemini · RAG · ATS engine", href: "#projects", kind: "PROJECT", x: "70%", y: "20%", lineTo: "left" },
-  { label: "Backend", tech: "Node.js · Express · FastAPI", href: "#stack", kind: "SKILL", x: "79%", y: "29%", lineTo: "left" },
-  { label: "KnowSamvidhan", tech: "Next.js · Prisma · Supabase", href: "#projects", kind: "PROJECT", x: "76%", y: "45%", lineTo: "left" },
-  { label: "Data", tech: "PostgreSQL · Prisma · Supabase", href: "#stack", kind: "SKILL", x: "77%", y: "60%", lineTo: "left" },
-  { label: "KrishiMitra", tech: "Next.js · Node · Vision AI", href: "#projects", kind: "PROJECT", x: "70%", y: "69%", lineTo: "left" },
-  { label: "Full-stack builds", tech: "React · Express · MongoDB", href: "#projects", kind: "PROJECT", x: "62%", y: "80%", lineTo: "left" },
+const MARQUEE = ["NEXT.JS", "TYPESCRIPT", "RAG SYSTEMS", "GEMINI AI", "NODE.JS", "POSTGRESQL", "SUPABASE", "TAILWIND", "FRAMER MOTION", "THREE.JS"];
+
+const STATS = [
+  { v: 14, s: "+", l: "Technologies" },
+  { v: 5, s: "", l: "Live projects" },
+  { v: 3, s: "+", l: "AI systems shipped" },
 ];
 
-/** parallax depth helper — layer drifts with mouse vars set on the section */
-const depth = (x: number, y: number): CSSProperties => ({
-  transform: `translate3d(calc(var(--px, 0) * ${x}px), calc(var(--py, 0) * ${y}px), 0)`,
-  willChange: "transform",
-});
-
-const MARQUEE = [  "RAG", "LLMS", "AI AGENTS", "BUILT IN PUBLIC", "AI × FULL-STACK",
-  "REACT", "NEXT.JS", "TYPESCRIPT", "NODE", "EXPRESS",
-  "FASTAPI", "MONGODB", "POSTGRESQL", "SUPABASE",
-];
-
-function HudCard({
-  node,
-  index,
-  active,
-  onHover,
-  className = "",
-}: {
-  node: Node;
-  index: string;
-  active: boolean;
-  onHover: (on: boolean) => void;
-  className?: string;
-}) {
+function GithubIcon({ size = 15 }: { size?: number }) {
   return (
-    <a
-      href={node.href}
-      onMouseEnter={() => onHover(true)}
-      onMouseLeave={() => onHover(false)}
-      onFocus={() => onHover(true)}
-      onBlur={() => onHover(false)}
-      className={`group block min-w-[130px] border bg-[#0a0f1e]/80 backdrop-blur-xl transition-all duration-300 ${
-        active
-          ? "border-cyan-300 shadow-[0_0_28px_rgba(34,211,238,0.35)]"
-          : "border-cyan-200/15 hover:border-cyan-200/40"
-      } ${className}`}
-      style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}
-    >
-      <div className="px-3 py-2">
-        <div className="flex items-center justify-between font-mono text-[8px] tracking-[0.2em]">
-          <span className={node.kind === "SKILL" ? "text-cyan-300/80" : "text-fuchsia-300/80"}>{node.kind}</span>
-          <span className="text-zinc-600">{index}</span>
-        </div>
-        <div className="mt-0.5 whitespace-nowrap text-[13px] font-bold text-white">{node.label}</div>
-        <div
-          className={`overflow-hidden font-mono text-[10px] leading-relaxed text-cyan-200 transition-all duration-300 ${
-            active ? "mt-1 max-h-20 opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          {node.tech}
-        </div>
-      </div>
-      {/* connection dot */}
-      <span
-        className={`absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full transition ${
-          active ? "bg-cyan-200 shadow-[0_0_10px_#22d3ee]" : "bg-cyan-200/60"
-        } ${node.lineTo === "left" ? "-left-[3px]" : "-right-[3px]"}`}
-      />
-    </a>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
+  );
+}
+function LinkedinIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
   );
 }
 
-export default function Hero() {
-  const [active, setActive] = useState<number | null>(null);
+function useISTClock() {
+  const [time, setTime] = useState("--:--:--");
+  useEffect(() => {
+    const fmt = new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
+    const tick = () => setTime(fmt.format(new Date()).toUpperCase());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
 
-  // mouse parallax — writes --px/--py vars, layers drift at different depths
+function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    const step = (now: number) => {
+      const p = Math.min(1, (now - start) / 1400);
+      setVal(Math.round((1 - Math.pow(1 - p, 3)) * to));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    const t = setTimeout(() => { raf = requestAnimationFrame(step); }, 800);
+    return () => { clearTimeout(t); cancelAnimationFrame(raf); };
+  }, [to]);
+  return <span>{String(val).padStart(2, "0")}{suffix}</span>;
+}
+
+const ease = [0.22, 1, 0.36, 1] as const;
+
+export default function Hero() {
+  const [roleIdx, setRoleIdx] = useState(0);
+  const ist = useISTClock();
+
+  useEffect(() => {
+    const id = setInterval(() => setRoleIdx((p) => (p + 1) % ROLES.length), 2600);
+    return () => clearInterval(id);
+  }, []);
+
   const onParallax = (e: ReactMouseEvent<HTMLElement>) => {
     if (!window.matchMedia("(pointer: fine)").matches) return;
     const r = e.currentTarget.getBoundingClientRect();
@@ -105,137 +79,122 @@ export default function Hero() {
 
   return (
     <section id="top" onMouseMove={onParallax} className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#050508]">
-      <HeroScene />
-
-      <div className="relative z-10 mx-auto flex w-full max-w-[1500px] flex-1 flex-col px-5 pt-24 lg:px-8">
-        {/* ============ DESKTOP STAGE (matches screenshot) ============ */}
-        <div className="relative hidden min-h-[640px] flex-1 xl:block">
-          {/* giant name behind portrait */}
-          <div className="pointer-events-none absolute left-0 top-[6%] z-0 select-none" style={depth(18, 12)}>
-            <div className="bg-gradient-to-b from-white via-white to-[#8ea2ff] bg-clip-text text-[7.5vw] font-black leading-[0.9] tracking-tight text-transparent">
-              SATYAM
-            </div>
-            <div
-              className="text-[7.5vw] font-black leading-[0.9] tracking-tight text-transparent"
-              style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.55)" }}
-            >
-              KUMAR
-            </div>
-          </div>
-
-          {/* SVG lines + HUD cards — one parallax layer so lines stay connected */}
-          <div className="absolute inset-0 z-10" style={depth(-16, -10)}>
-          <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1000 620" preserveAspectRatio="none">
-            {NODES.map((n, i) => {
-              const nx = parseFloat(n.x) * 10;
-              const ny = parseFloat(n.y) * 6.2 + 20;
-              const isActive = active === i;
-              const col = n.kind === "SKILL" ? "#22d3ee" : "#e879f9";
-              return (
-                <line
-                  key={n.label}
-                  x1="600"
-                  y1="300"
-                  x2={n.lineTo === "left" ? nx + 8 : nx + 130}
-                  y2={ny}
-                  stroke={isActive ? col : "rgba(125,211,252,0.30)"}
-                  strokeWidth={isActive ? 1.8 : 1}
-                  style={isActive ? { filter: `drop-shadow(0 0 6px ${col})` } : undefined}
-                />
-              );
-            })}
-          </svg>
-
-          {/* left bottom block */}
-          <div className="absolute bottom-[2%] left-0 z-20 max-w-[330px]" style={depth(10, 8)}>
-            <div className="font-mono text-[10px] tracking-[0.25em] text-zinc-400">
-              FULL-STACK + AI ENGINEER · INDIA · 2026
-            </div>
-            <h1 className="mt-3 text-[30px] font-medium leading-[1.15] text-white">
-              I turn ideas into
-              <br />
-              <span className="bg-gradient-to-r from-cyan-300 to-indigo-400 bg-clip-text font-bold text-transparent">
-                intelligent digital
-                <br />
-                products.
-              </span>
-            </h1>
-            <div className="mt-5 flex gap-3">
-              <a href="#projects" className="bg-white px-5 py-3 font-mono text-[11px] tracking-[0.15em] text-black transition hover:bg-cyan-300">
-                EXPLORE MY WORK →
-              </a>
-              <a href="#resume" className="border border-white/15 px-5 py-3 font-mono text-[11px] tracking-[0.15em] text-zinc-200 transition hover:border-cyan-300/50 hover:text-white">
-                VIEW RESUME
-              </a>
-            </div>
-              <div className="mt-6 space-y-1 font-mono text-[10px] tracking-[0.12em] text-zinc-500">
-                <div>&gt; PORTFOLIO.OS v2026 <span className="ml-2 text-zinc-400">.........</span> <span className="text-zinc-300">ONLINE</span></div>
-                <div>&gt; SKILLS <span className="ml-2 text-zinc-400">...................</span> <span className="text-emerald-400">14</span> LOADED</div>
-                <div>&gt; PROJECTS <span className="ml-2 text-zinc-400">.................</span> <span className="text-emerald-400">05</span> LINKED</div>
-                <div>&gt; HOLOGRAM <span className="ml-2 text-zinc-400">................</span> DEPLOYED</div>
-              </div>
-          </div>
-
-          {/* globe — hero core */}
-          <div className="absolute left-[46%] top-[20%] z-10 h-[360px] w-[360px]" style={depth(26, 18)}>
-            <HoloGlobeCanvas boost={active !== null} />
-            <div className="pointer-events-none absolute left-1/2 top-[46%] -translate-x-1/2 font-mono text-[10px] tracking-[0.25em] text-white/50">
-              INDIA · HOME
-            </div>
-          </div>
-
-          {/* 8 HUD cards around globe */}
-          {NODES.map((n, i) => (
-            <div key={n.label} className="absolute" style={{ left: n.x, top: n.y }}>
-              <HudCard node={n} index={`0${i + 1}`} active={active === i} onHover={(on) => setActive(on ? i : null)} />
-            </div>
-          ))}
-          </div>{/* /parallax: lines + cards */}
-
-          {/* right edge dots */}
-          <div className="absolute right-0 top-[38%] z-20 flex flex-col items-center gap-3">
-            <span className={`h-2.5 w-2.5 rounded-full ${active === null ? "bg-indigo-400 shadow-[0_0_12px_#818cf8]" : "bg-zinc-600"}`} />
-            {NODES.slice(0, 6).map((n, i) => (
-              <a key={n.label} href={n.href} aria-label={n.label}
-                onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}
-                className={`h-2 w-2 rounded-full border ${active === i ? "border-cyan-200 bg-cyan-200" : "border-zinc-600"}`} />
-            ))}
-          </div>
-        </div>
-
-        {/* ============ MOBILE / TABLET ============ */}
-        <div className="flex-1 xl:hidden">
-          <div className="pointer-events-none select-none">
-            <div className="bg-gradient-to-b from-white to-[#8ea2ff] bg-clip-text text-[16vw] font-black leading-[0.9] text-transparent">SATYAM</div>
-            <div className="text-[16vw] font-black leading-[0.9] text-transparent" style={{ WebkitTextStroke: "1px rgba(255,255,255,0.5)" }}>KUMAR</div>
-          </div>
-          <div className="relative mx-auto h-[280px] w-full max-w-[340px]">
-            <HoloGlobeCanvas boost={active !== null} />
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] tracking-[0.25em] text-white/60">INDIA · HOME</div>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {NODES.map((n, i) => (
-              <HudCard key={n.label} node={n} index={`0${i + 1}`} active={active === i} onHover={(on) => setActive(on ? i : null)} className="relative" />
-            ))}
-          </div>
-          <div className="mt-6">
-            <div className="font-mono text-[10px] tracking-[0.25em] text-zinc-400">FULL-STACK + AI ENGINEER · INDIA · 2026</div>
-            <div className="mt-2 text-2xl text-white">I turn ideas into <span className="bg-gradient-to-r from-cyan-300 to-indigo-400 bg-clip-text font-bold text-transparent">intelligent digital products.</span></div>
-            <div className="mt-4 flex gap-3">
-              <a href="#projects" className="bg-white px-5 py-3 font-mono text-[11px] text-black">EXPLORE MY WORK →</a>
-              <a href="#resume" className="border border-white/15 px-5 py-3 font-mono text-[11px] text-zinc-200">VIEW RESUME</a>
-            </div>
-          </div>
-        </div>
+      {/* ===== calm studio background (3D sirf right side me hai) ===== */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div className="absolute -left-40 top-1/4 h-[480px] w-[480px] rounded-full bg-indigo-600/15 blur-[140px]" />
+        <div className="absolute -right-32 bottom-0 h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-[140px]" />
+        <div className="grid-bg absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,black_10%,transparent_75%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,#050508_85%)]" />
       </div>
 
-      {/* bottom tech marquee */}
-      <div className="relative z-10 overflow-hidden border-t border-white/10 py-3">
-        <div className="flex w-max animate-[marquee_28s_linear_infinite] gap-10 whitespace-nowrap font-mono text-[11px] tracking-[0.25em]">
-          {[...MARQUEE, ...MARQUEE].map((t, i) => (
-            <span key={i} className={i % 2 ? "text-zinc-500" : "text-cyan-400/80"}>{t}</span>
-          ))}
+      <div className="relative z-10 mx-auto grid w-full max-w-[1300px] flex-1 items-center gap-10 px-5 pb-10 pt-28 lg:grid-cols-[1.02fr_0.98fr] lg:px-8">
+        {/* ============ LEFT: clean content (koi HUD cluster nahi) ============ */}
+        <div>
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease }} className="flex flex-wrap items-center gap-3 font-mono text-[10px] tracking-[0.18em]">
+            <a href="#contact" className="group flex items-center gap-2.5 rounded-full border border-emerald-300/25 bg-emerald-400/10 py-1.5 pl-2 pr-4 transition hover:border-emerald-300/50">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              <span className="text-emerald-200">AVAILABLE FOR WORK</span>
+              <ArrowUpRight size={12} className="text-emerald-300 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+            <span className="hidden items-center gap-1.5 text-zinc-500 sm:flex"><MapPin size={11} className="text-cyan-300/70" /> INDIA — <span className="text-zinc-300">{ist}</span></span>
+          </motion.div>
+
+          <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2, ease }} className="mt-7 font-mono text-[11px] tracking-[0.35em] text-cyan-300/90">
+            SATYAM KUMAR — PORTFOLIO 2026
+          </motion.p>
+
+          <motion.h1 initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, delay: 0.3, ease }} className="mt-4 text-[clamp(2.6rem,5.5vw,4.6rem)] font-black leading-[1.02] tracking-tight text-white">
+            I turn ideas into
+            <br />
+            <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-400 bg-clip-text text-transparent">
+              intelligent products.
+            </span>
+          </motion.h1>
+
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.42, ease }} className="mt-4 flex h-7 items-center gap-2 font-mono text-[13px] tracking-[0.18em]">
+            <span className="text-zinc-500">&gt;_</span>
+            <AnimatePresence mode="wait">
+              <motion.span key={roleIdx} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.32 }} className="font-bold text-white">
+                {ROLES[roleIdx].toUpperCase()}
+              </motion.span>
+            </AnimatePresence>
+            <motion.span animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="text-cyan-300">▊</motion.span>
+          </motion.div>
+
+          <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5, ease }} className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-zinc-400">
+            Full-stack × AI engineer. I ship RAG copilots, knowledge engines and cinematic web apps with Next.js, TypeScript and Gemini.
+          </motion.p>
+
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6, ease }} className="mt-7 flex flex-wrap gap-3">
+            <MagneticButton>
+              <a href="#projects" className="group relative flex items-center gap-2 overflow-hidden rounded-full bg-white px-7 py-3.5 font-mono text-[11px] font-bold tracking-[0.15em] text-black transition hover:bg-cyan-300">
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/60 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                EXPLORE MY WORK <ArrowUpRight size={14} />
+              </a>
+            </MagneticButton>
+            <MagneticButton>
+              <a href="#contact" className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-3.5 font-mono text-[11px] tracking-[0.15em] text-zinc-200 backdrop-blur-md transition hover:border-cyan-300/60 hover:text-white hover:shadow-[0_0_24px_rgba(34,211,238,0.25)]">
+                LET&apos;S TALK <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_#22d3ee]" />
+              </a>
+            </MagneticButton>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.7, ease }} className="mt-8 flex items-center gap-8">
+            {STATS.map((st) => (
+              <div key={st.l}>
+                <div className="text-2xl font-black text-white"><CountUp to={st.v} suffix={st.s} /></div>
+                <div className="mt-0.5 font-mono text-[9px] tracking-[0.2em] text-zinc-500">{st.l.toUpperCase()}</div>
+              </div>
+            ))}
+            <span className="hidden h-10 w-px bg-white/10 sm:block" />
+            <div className="hidden items-center gap-2 sm:flex">
+              {[{ icon: GithubIcon, href: "https://github.com/satyam-kr900", label: "GitHub" }, { icon: LinkedinIcon, href: "https://linkedin.com/in/satyam-kumar-77116332b", label: "LinkedIn" }, { icon: Mail, href: "mailto:satyam900kr@gmail.com", label: "Email" }].map((s) => (
+                <a key={s.label} href={s.href} target={s.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" aria-label={s.label} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-zinc-400 transition hover:border-cyan-300/50 hover:text-cyan-200">
+                  <s.icon size={15} />
+                </a>
+              ))}
+            </div>
+          </motion.div>
         </div>
+
+        {/* ============ RIGHT: alag 3D sculpture (sirf ek object) ============ */}
+        <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, delay: 0.35, ease }} className="relative h-[420px] sm:h-[480px] lg:h-[580px]">
+          <div className="absolute inset-8 rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.14),rgba(168,85,247,0.1)_55%,transparent_75%)] blur-2xl" />
+          <div className="absolute inset-0 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] backdrop-blur-sm">
+            <ChromeSculptureCanvas />
+          </div>
+          {/* floating glass chips — 3D se alag, halke */}
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="glass absolute left-4 top-6 rounded-2xl px-4 py-2.5">
+            <div className="font-mono text-[8px] tracking-[0.25em] text-cyan-300">STACK</div>
+            <div className="text-sm font-bold text-white">Next.js · TypeScript</div>
+          </motion.div>
+          <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.6 }} className="glass absolute bottom-8 right-4 rounded-2xl px-4 py-2.5">
+            <div className="font-mono text-[8px] tracking-[0.25em] text-fuchsia-300">AI LAYER</div>
+            <div className="text-sm font-bold text-white">RAG · Gemini</div>
+          </motion.div>
+          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-[9px] tracking-[0.25em] text-white/60 backdrop-blur-md">
+            <Sparkles size={10} className="text-cyan-300" /> CHROME CORE · LIVE
+          </div>
+        </motion.div>
+      </div>
+
+      {/* bottom strip */}
+      <div className="relative z-10 border-t border-white/10 bg-black/40 backdrop-blur-md">
+        <div className="group relative overflow-hidden py-3">
+          <div className="flex w-max animate-[marquee_28s_linear_infinite] gap-10 whitespace-nowrap font-mono text-[11px] tracking-[0.25em] group-hover:[animation-play-state:paused]">
+            {[...MARQUEE, ...MARQUEE].map((t, i) => (
+              <span key={i} className={`flex items-center gap-10 ${i % 2 ? "text-zinc-500" : "text-cyan-400/80"}`}>{t} <span className="text-zinc-700">◆</span></span>
+            ))}
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#050508] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#050508] to-transparent" />
+        </div>
+        <a href="#about" className="absolute bottom-full right-5 mb-3 hidden items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-zinc-500 transition hover:text-cyan-200 lg:flex">
+          SCROLL <ArrowDown size={11} />
+        </a>
       </div>
     </section>
   );

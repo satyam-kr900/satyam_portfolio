@@ -1,140 +1,230 @@
 "use client";
 import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
+import { Stars, Float, Sparkles, Trail } from "@react-three/drei";
 import * as THREE from "three";
 
-function latLonToVec3(lat: number, lon: number, r: number): THREE.Vector3 {
-  const phi = ((90 - lat) * Math.PI) / 180;
-  const theta = ((lon + 180) * Math.PI) / 180;
-  return new THREE.Vector3(
-    -r * Math.sin(phi) * Math.cos(theta),
-    r * Math.cos(phi),
-    r * Math.sin(phi) * Math.sin(theta)
-  );
-}
+/* ==================== ADVANCED CENTERPIECE: NEURAL AI CORE ==================== */
 
-const INDIA = { lat: 21.5, lon: 78 };
-const DESTS = [
-  { lat: 37.5, lon: -95.5 }, // USA
-  { lat: 51.5, lon: -0.1 }, // UK
-  { lat: 51, lon: 10 }, // EU
-  { lat: 36, lon: 139 }, // Japan
-  { lat: -25, lon: 133 }, // Australia
-  { lat: -14, lon: -51 }, // Brazil
+const SATS = [
+  { r: 1.45, speed: 0.75, color: "#22d3ee", size: 0.042, tilt: 0.55, offset: 0.0 },
+  { r: 1.68, speed: -0.55, color: "#a855f7", size: 0.05, tilt: -0.45, offset: 1.4 },
+  { r: 1.92, speed: 0.42, color: "#f472b6", size: 0.036, tilt: 0.95, offset: 2.7 },
+  { r: 1.28, speed: -0.95, color: "#67e8f9", size: 0.032, tilt: -0.9, offset: 4.2 },
+  { r: 2.12, speed: 0.3, color: "#818cf8", size: 0.028, tilt: 0.2, offset: 5.3 },
 ];
 
-function GlobeGroup({ boost }: { boost: boolean }) {
-  const spin = useRef<THREE.Group>(null!);
-  const pulse = useRef<THREE.Mesh>(null!);
+function CoreGroup({ boost }: { boost: boolean }) {
+  const tilt = useRef<THREE.Group>(null!);
+  const inner = useRef<THREE.Mesh>(null!);
+  const mid = useRef<THREE.Mesh>(null!);
+  const midWire = useRef<THREE.Mesh>(null!);
+  const outer = useRef<THREE.Mesh>(null!);
+  const ringA = useRef<THREE.Mesh>(null!);
+  const ringB = useRef<THREE.Mesh>(null!);
+  const ringC = useRef<THREE.Mesh>(null!);
+  const coreGlow = useRef<THREE.Mesh>(null!);
+  const orbits = useRef<(THREE.Group | null)[]>([]);
+  const wave1 = useRef<THREE.Mesh>(null!);
+  const wave2 = useRef<THREE.Mesh>(null!);
+  const waveMat1 = useRef<THREE.MeshBasicMaterial>(null!);
+  const waveMat2 = useRef<THREE.MeshBasicMaterial>(null!);
+  const beamMat = useRef<THREE.MeshBasicMaterial>(null!);
+  const speedV = useRef(1);
 
-  const dots = useMemo(() => {
-    const N = 420;
+  // dense fibonacci particle sphere
+  const spherePts = useMemo(() => {
+    const N = 1400;
     const arr = new Float32Array(N * 3);
     const golden = Math.PI * (3 - Math.sqrt(5));
     for (let i = 0; i < N; i++) {
       const y = 1 - (i / (N - 1)) * 2;
-      const rad = Math.sqrt(1 - y * y);
+      const rad = Math.sqrt(Math.max(0, 1 - y * y));
       const th = golden * i;
-      arr[i * 3] = Math.cos(th) * rad * 1.01;
-      arr[i * 3 + 1] = y * 1.01;
-      arr[i * 3 + 2] = Math.sin(th) * rad * 1.01;
+      const R = 1.02 + Math.random() * 0.03;
+      arr[i * 3] = Math.cos(th) * rad * R;
+      arr[i * 3 + 1] = y * R;
+      arr[i * 3 + 2] = Math.sin(th) * rad * R;
     }
     return arr;
   }, []);
 
-  const arcs = useMemo(() => {
-    const from = latLonToVec3(INDIA.lat, INDIA.lon, 1.02);
-    return DESTS.map((d) => {
-      const to = latLonToVec3(d.lat, d.lon, 1.02);
-      const mid = from
-        .clone()
-        .add(to)
-        .multiplyScalar(0.5)
-        .normalize()
-        .multiplyScalar(1.35 + from.distanceTo(to) * 0.15);
-      const curve = new THREE.QuadraticBezierCurve3(from.clone(), mid, to.clone());
-      return new THREE.BufferGeometry().setFromPoints(curve.getPoints(40));
+  // outer stardust shell
+  const dust = useMemo(() => {
+    const N = 550;
+    const arr = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const r = 1.4 + Math.random() * 1.1;
+      const th = Math.random() * Math.PI * 2;
+      const ph = Math.acos(2 * Math.random() - 1);
+      arr[i * 3] = r * Math.sin(ph) * Math.cos(th);
+      arr[i * 3 + 1] = r * Math.cos(ph) * 0.75;
+      arr[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+    }
+    return arr;
+  }, []);
+
+  useEffect(() => {
+    orbits.current.forEach((g, i) => {
+      if (g) g.rotation.y = SATS[i].offset;
     });
   }, []);
 
-  const markers = useMemo(() => {
-    return [INDIA, ...DESTS].map((d) => latLonToVec3(d.lat, d.lon, 1.03));
-  }, []);
-
-  const arcLines = useMemo(() => {
-    return arcs.map(
-      (g, i) =>
-        new THREE.Line(
-          g,
-          new THREE.LineBasicMaterial({
-            color: i % 2 ? "#a855f7" : "#22d3ee",
-            transparent: true,
-            opacity: 0.75,
-          })
-        )
-    );
-  }, [arcs]);
-
   useFrame((state, delta) => {
-    const speed = boost ? 1.7 : 0.35;
-    spin.current.rotation.y += delta * speed;
+    const d = Math.min(delta, 0.05);
     const t = state.clock.elapsedTime;
-    const s = 1 + Math.sin(t * 3.2) * 0.25;
-    if (pulse.current) pulse.current.scale.setScalar(s);
+    speedV.current += ((boost ? 2.0 : 1) - speedV.current) * 0.06;
+    const s = speedV.current;
+
+    const w = window as unknown as { __mx?: number; __my?: number };
+    const mx = w.__mx ?? 0;
+    const my = w.__my ?? 0;
+    tilt.current.rotation.y += (mx * 0.55 + t * 0.05 - tilt.current.rotation.y) * 0.05;
+    tilt.current.rotation.x += (my * 0.35 - tilt.current.rotation.x) * 0.05;
+    tilt.current.position.y = Math.sin(t * 0.9) * 0.07;
+
+    inner.current.rotation.y += d * 1.1 * s;
+    inner.current.rotation.x += d * 0.7 * s;
+    mid.current.rotation.y -= d * 0.4 * s;
+    mid.current.rotation.z += d * 0.18 * s;
+    midWire.current.rotation.copy(mid.current.rotation);
+    outer.current.rotation.y += d * 0.22 * s;
+    outer.current.rotation.x -= d * 0.12 * s;
+
+    ringA.current.rotation.z += d * 0.5 * s;
+    ringB.current.rotation.z -= d * 0.35 * s;
+    ringC.current.rotation.z += d * 0.2 * s;
+
+    orbits.current.forEach((g, i) => {
+      if (g) g.rotation.y += d * SATS[i].speed * s;
+    });
+
+    // heartbeat of the core
+    const pulse = 1 + Math.sin(t * 2.4) * 0.09;
+    coreGlow.current.scale.setScalar(pulse * (boost ? 1.18 : 1));
+
+    // expanding shockwaves
+    const p1 = (t * 0.45 * s) % 1;
+    const p2 = ((t * 0.45 * s + 0.5) % 1);
+    wave1.current.scale.setScalar(0.6 + p1 * 1.9);
+    wave2.current.scale.setScalar(0.6 + p2 * 1.9);
+    if (waveMat1.current) waveMat1.current.opacity = (1 - p1) * 0.5;
+    if (waveMat2.current) waveMat2.current.opacity = (1 - p2) * 0.35;
+    if (beamMat.current) beamMat.current.opacity = 0.1 + Math.sin(t * 2) * 0.03 + (boost ? 0.06 : 0);
   });
 
-  const indiaPos = markers[0];
-
   return (
-    <group>
-      <group ref={spin}>
-        {/* hologram sphere */}
-        <mesh>
-          <sphereGeometry args={[1, 32, 32]} />
-          <meshBasicMaterial color="#22d3ee" wireframe transparent opacity={0.22} />
-        </mesh>
-        <mesh scale={0.985}>
-          <sphereGeometry args={[1, 24, 24]} />
-          <meshBasicMaterial color="#0ea5e9" transparent opacity={0.05} />
-        </mesh>
-        {/* dotted surface */}
-        <points>
-          <bufferGeometry>
-            <bufferAttribute attach="attributes-position" args={[dots, 3]} />
-          </bufferGeometry>
-          <pointsMaterial size={0.022} color="#7dd3fc" transparent opacity={0.85} sizeAttenuation />
-        </points>
-        {/* arcs India -> world */}
-        {arcLines.map((l, i) => (
-          <primitive key={i} object={l} />
-        ))}
-        {/* markers */}
-        {markers.map((p, i) => (
-          <mesh key={i} position={p}>
-            <sphereGeometry args={[i === 0 ? 0.035 : 0.02, 12, 12]} />
-            <meshBasicMaterial color={i === 0 ? "#f472b6" : "#67e8f9"} />
-          </mesh>
-        ))}
-        {/* INDIA pulse ring */}
-        <mesh ref={pulse} position={indiaPos}>
-          <ringGeometry args={[0.05, 0.07, 24]} />
-          <meshBasicMaterial color="#f472b6" transparent opacity={0.9} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-      {/* orbit rings */}
-      <mesh rotation={[Math.PI / 2.3, 0.2, 0]}>
-        <torusGeometry args={[1.45, 0.008, 8, 120]} />
-        <meshBasicMaterial color="#22d3ee" transparent opacity={0.55} />
-      </mesh>
-      <mesh rotation={[Math.PI / 1.7, -0.3, 0]}>
-        <torusGeometry args={[1.7, 0.006, 8, 120]} />
-        <meshBasicMaterial color="#a855f7" transparent opacity={0.4} />
-      </mesh>
-      {/* base glow */}
+    <group ref={tilt}>
+      {/* ===== energy heart ===== */}
       <mesh>
-        <sphereGeometry args={[1.9, 32, 32]} />
-        <meshBasicMaterial color="#0ea5e9" transparent opacity={0.05} side={THREE.BackSide} />
+        <sphereGeometry args={[0.28, 24, 24]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.95} />
+      </mesh>
+      <mesh ref={coreGlow}>
+        <sphereGeometry args={[0.62, 24, 24]} />
+        <meshBasicMaterial color="#22d3ee" transparent opacity={0.22} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[1.0, 24, 24]} />
+        <meshBasicMaterial color="#6e7cff" transparent opacity={0.07} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.BackSide} />
+      </mesh>
+
+      {/* ===== rotating poly shells ===== */}
+      <mesh ref={inner}>
+        <icosahedronGeometry args={[0.55, 1]} />
+        <meshBasicMaterial color="#67e8f9" wireframe transparent opacity={0.85} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <mesh ref={mid}>
+        <icosahedronGeometry args={[0.88, 1]} />
+        <meshBasicMaterial color="#a855f7" transparent opacity={0.12} depthWrite={false} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh ref={midWire}>
+        <icosahedronGeometry args={[0.88, 1]} />
+        <meshBasicMaterial color="#c4b5fd" wireframe transparent opacity={0.35} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <mesh ref={outer}>
+        <dodecahedronGeometry args={[1.14, 0]} />
+        <meshBasicMaterial color="#818cf8" wireframe transparent opacity={0.22} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+
+      {/* ===== particles ===== */}
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[spherePts, 3]} />
+        </bufferGeometry>
+        <pointsMaterial size={0.02} color="#7dd3fc" transparent opacity={0.9} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} />
+      </points>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[dust, 3]} />
+        </bufferGeometry>
+        <pointsMaterial size={0.03} color="#c4b5fd" transparent opacity={0.55} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} />
+      </points>
+
+      {/* ===== neon orbit rings ===== */}
+      <mesh ref={ringA} rotation={[Math.PI / 2.25, 0.25, 0]}>
+        <torusGeometry args={[1.45, 0.01, 8, 140]} />
+        <meshBasicMaterial color="#22d3ee" transparent opacity={0.7} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <mesh ref={ringB} rotation={[Math.PI / 1.75, -0.35, 0.2]}>
+        <torusGeometry args={[1.72, 0.008, 8, 140]} />
+        <meshBasicMaterial color="#a855f7" transparent opacity={0.55} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <mesh ref={ringC} rotation={[Math.PI / 2.6, 0.6, -0.3]}>
+        <torusGeometry args={[1.98, 0.006, 8, 140]} />
+        <meshBasicMaterial color="#f472b6" transparent opacity={0.35} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+
+      {/* ===== shockwaves (face camera) ===== */}
+      <mesh ref={wave1}>
+        <ringGeometry args={[0.95, 1.0, 64]} />
+        <meshBasicMaterial ref={waveMat1} color="#22d3ee" transparent opacity={0.4} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh ref={wave2}>
+        <ringGeometry args={[0.95, 1.0, 64]} />
+        <meshBasicMaterial ref={waveMat2} color="#a855f7" transparent opacity={0.3} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* ===== orbiting satellites with light trails ===== */}
+      {SATS.map((st, i) => (
+        <group key={st.color + i} rotation={[st.tilt, 0, 0]}>
+          <group
+            ref={(g) => {
+              orbits.current[i] = g;
+            }}
+          >
+            <Trail width={1.6} length={5.5} color={new THREE.Color(st.color)} attenuation={(ww) => ww * ww}>
+              <mesh position={[st.r, 0, 0]}>
+                <sphereGeometry args={[st.size, 12, 12]} />
+                <meshBasicMaterial color="#ffffff" />
+              </mesh>
+            </Trail>
+            <mesh position={[st.r, 0, 0]}>
+              <sphereGeometry args={[st.size * 2.6, 12, 12]} />
+              <meshBasicMaterial color={st.color} transparent opacity={0.45} blending={THREE.AdditiveBlending} depthWrite={false} />
+            </mesh>
+          </group>
+          {/* faint orbit path */}
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[st.r, 0.003, 6, 120]} />
+            <meshBasicMaterial color={st.color} transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* ===== holo base platform ===== */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.7, 0]}>
+        <ringGeometry args={[0.7, 1.15, 64]} />
+        <meshBasicMaterial color="#22d3ee" transparent opacity={0.5} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.71, 0]}>
+        <circleGeometry args={[0.7, 48]} />
+        <meshBasicMaterial color="#0ea5e9" transparent opacity={0.12} blending={THREE.AdditiveBlending} depthWrite={false} />
+      </mesh>
+      {/* vertical light beam */}
+      <mesh position={[0, -0.6, 0]}>
+        <cylinderGeometry args={[0.5, 0.85, 2.2, 32, 1, true]} />
+        <meshBasicMaterial ref={beamMat} color="#22d3ee" transparent opacity={0.1} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -142,15 +232,19 @@ function GlobeGroup({ boost }: { boost: boolean }) {
 
 export function HoloGlobeCanvas({ boost }: { boost: boolean }) {
   return (
-    <Canvas camera={{ position: [0, 0.4, 3.4], fov: 45 }} dpr={[1, 1.75]} gl={{ antialias: true, alpha: true }}>
-      <ambientLight intensity={0.9} />
-      <pointLight position={[4, 4, 4]} intensity={20} color="#22d3ee" />
-      <GlobeGroup boost={boost} />
+    <Canvas camera={{ position: [0, 0.15, 4.2], fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+      <ambientLight intensity={0.7} />
+      <pointLight position={[5, 3, 4]} intensity={30} color="#22d3ee" />
+      <pointLight position={[-5, -2, 3]} intensity={22} color="#a855f7" />
+      <Float speed={1.6} rotationIntensity={0.25} floatIntensity={0.7}>
+        <CoreGroup boost={boost} />
+      </Float>
+      <Sparkles count={70} scale={[4.5, 4.5, 4.5]} size={2.5} speed={0.5} color="#67e8f9" opacity={0.6} />
     </Canvas>
   );
 }
 
-/* ==================== NEW HERO BACKGROUND: NEON WARP ==================== */
+/* ==================== HERO BACKGROUND: NEON WARP ==================== */
 
 const reducedMotion = () =>
   typeof window !== "undefined" &&
@@ -216,7 +310,7 @@ function KnotCore() {
   const shell = useRef<THREE.Mesh>(null!);
   const shellWire = useRef<THREE.Mesh>(null!);
 
-  useFrame((s, delta) => {
+  useFrame((s) => {
     if (reducedMotion()) return;
     const t = s.clock.elapsedTime;
     knot.current.rotation.x = t * 0.22;

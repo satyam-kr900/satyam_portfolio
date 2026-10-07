@@ -2,6 +2,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { journey } from "@/data/projects";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 /** JOURNEY = 3D TUNNEL — the camera travels through your timeline */
 export default function Journey() {
@@ -25,8 +26,7 @@ export default function Journey() {
       </motion.div>
 
       <div className="relative mx-auto max-w-3xl">
-        <div className="text-center font-mono text-xs tracking-[0.35em] text-zinc-500">TRAVERSING TIME</div>
-        <h2 className="mt-2 text-center text-4xl font-bold md:text-5xl">MY JOURNEY</h2>
+        <SectionHeading index="06" eyebrow="JOURNEY" title="MY JOURNEY" align="center" />
         <div className="relative mt-12 pl-8">
           <div className="absolute bottom-4 left-[11px] top-4 w-px bg-gradient-to-b from-[#6e7cff] via-white/20 to-transparent" />
           {journey.map((j, i) => (

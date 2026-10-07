@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ABOUT_PORTRAIT } from "@/data/gallery";
 import SmartImage from "@/components/ui/SmartImage";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const ROWS = [
   { k: "NAME", v: "SATYAM KUMAR", d: "Hooghly, West Bengal, IN · Hindi / English" },
@@ -18,8 +19,7 @@ export default function About() {
   return (
     <section id="about" className="relative border-t border-white/5 bg-[#050505] px-5 py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="font-mono text-xs tracking-[0.35em] text-[#6e7cff]">IDENTITY // X-RAY</div>
-        <h2 className="mt-2 text-4xl font-bold md:text-6xl">ABOUT ME</h2>
+        <SectionHeading index="01" eyebrow="IDENTITY" title="ABOUT ME" />
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           {/* X-ray portrait — reacts to row hover */}

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const TABS = ["AI CHAT", "PARTICLES", "RAG DEMO", "AGENT", "VOICE AI", "CODEGEN"] as const;
 
@@ -69,9 +70,9 @@ function RagDemo() {
       <div className="text-zinc-500">QUERY: “ATS scoring factors?”</div>
       <div className="mt-2 space-y-1.5">
         {[["resume-parser chunk", 0.91], ["ats-engine chunk", 0.87], ["skill-gap chunk", 0.79]].map(([t, s]) => (
-          <div key={t as string} className="flex items-center gap-2">
-            <span className="rounded bg-white/5 px-2 py-1 text-zinc-300">▤ {t}</span>
-            <div className="h-1.5 flex-1 overflow-hidden rounded bg-white/5">
+          <div key={t as string} className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 rounded bg-white/5 px-2 py-1 text-zinc-300">▤ {t}</span>
+            <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded bg-white/5">
               <div className="h-full bg-gradient-to-r from-[#6e7cff] to-[#22d3ee]" style={{ width: `${(s as number) * 100}%` }} />
             </div>
             <span className="text-[#9aa6ff]">{s}</span>
@@ -153,15 +154,12 @@ export default function Playground() {
   return (
     <section id="playground" className="border-t border-white/5 bg-[#07070b] px-5 py-24">
       <div className="mx-auto max-w-5xl">
-        <div className="font-mono text-xs tracking-[0.35em] text-emerald-300">EXPERIMENTAL ZONE</div>
-        <h2 className="mt-2 text-4xl font-bold md:text-6xl">
-          EXPERIMENTS
-          <br />
-          THAT SHOULD
-          <br />
-          NOT EXIST.
-        </h2>
-        <p className="mt-3 text-zinc-400">Small interactive demos — the portfolio is the proof of work.</p>
+        <SectionHeading
+          index="05"
+          eyebrow="EXPERIMENTS"
+          title={<>EXPERIMENTS<br />THAT SHOULD<br />NOT EXIST.</>}
+          sub="Small interactive demos — the portfolio is the proof of work."
+        />
         <p className="mt-1 font-mono text-[10px] tracking-[0.25em] text-zinc-600">AI CHAT · RAG DEMO · VOICE AI = VISUAL PROTOTYPES (RULE-BASED DEMO, NO LIVE MODEL)</p>
         <div className="mt-6 flex flex-wrap gap-2">
           {TABS.map((t, i) => (

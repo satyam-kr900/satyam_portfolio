@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { skillOrbits } from "@/data/projects";
 import { projects } from "@/data/projects";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 /** TECH = ORBITAL SYSTEM — click a node for the full dossier */
 export default function TechGalaxy() {
@@ -15,8 +16,7 @@ export default function TechGalaxy() {
   return (
     <section id="stack" className="border-t border-white/5 bg-[#050505] px-5 py-24">
       <div className="mx-auto max-w-7xl">
-        <div className="font-mono text-xs tracking-[0.35em] text-[#6e7cff]">ORBITAL SYSTEM</div>
-        <h2 className="mt-2 text-4xl font-bold md:text-6xl">TECH GALAXY</h2>
+        <SectionHeading index="04" eyebrow="STACK" title="TECH GALAXY" />
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
           <div className="flex flex-col items-center gap-2">
             <div className="glass rounded-full px-6 py-2 font-mono text-sm font-bold shadow-[0_0_30px_rgba(110,124,255,0.25)]">

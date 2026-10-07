@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Download, MapPin, Phone, Mail, Printer, ClipboardCopy, Check, Globe, Link } from "lucide-react";
 import { RESUME, resumeToPlainText } from "@/data/resume";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 export default function Resume() {
   const [copied, setCopied] = useState(false);
@@ -20,8 +21,7 @@ export default function Resume() {
   return (
     <section id="resume" className="border-t border-white/5 bg-[#07070b] px-5 py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="font-mono text-xs tracking-[0.35em] text-[#9aa6ff]">INTERACTIVE RESUME</div>
-        <h2 className="mt-2 text-4xl font-bold md:text-5xl">READ ME. HIRE ME.</h2>
+        <SectionHeading index="07" eyebrow="RESUME" title="READ ME. HIRE ME." />
 
         <div className="mt-6 flex flex-wrap gap-3 print:hidden">
           <a

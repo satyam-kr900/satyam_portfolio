@@ -69,8 +69,8 @@ export default function Navbar() {
         </button>
       </motion.nav>
       {open && (
-        <nav className="glass-strong absolute top-16 flex flex-col gap-1 rounded-3xl p-3 md:hidden">
-          {[...LINKS, { label: "RESUME", href: "#resume" }, { label: "CONTACT", href: "#contact" }].map((l) => (
+        <nav className="glass-strong absolute left-4 right-4 top-16 mx-auto flex max-w-sm flex-col gap-1 rounded-3xl p-3 md:hidden">
+          {[...LINKS, { label: "CONTACT", href: "#contact" }].map((l) => (
             <a
               key={l.href + l.label}
               href={l.href}
